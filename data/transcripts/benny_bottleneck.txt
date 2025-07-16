@@ -1,0 +1,19 @@
+Um hi there. I'm Benny I think, and I'm supposed to talk about this profiling thing.
+
+So your computers are slow sometimes right? Yeah that happens. We have this thing that helps with that. It's called like Pyro-something. Periscope? I'm not really sure about the name.
+
+Anyway it looks at your code and tells you stuff. Like which parts are slow or whatever. It makes these graph things that are supposed to help but honestly they're pretty confusing. Lots of colors and bars and stuff.
+
+There's this overhead thing that's supposed to be low. Maybe 5%? Could be 10%. I'm not really sure about the numbers. But it's not supposed to break your applications or anything.
+
+Your developers would need to install it somehow. They probably know how to do that stuff. It's technical and I don't really understand the details. Something about SDKs and configurations and things like that.
+
+Some companies use this and they say it helps. I heard about one company that fixed something but I don't remember what it was. Something about databases being slow? They made it faster somehow.
+
+The benefits are like, your applications run better and maybe you save money. Most of the time anyway. Sometimes it doesn't work as well but usually it's okay.
+
+If you want to try it we could probably do that. I'd have to ask someone else about how to set it up though. There's paperwork and technical stuff that I don't handle.
+
+Oh and it works with Grafana I think. That's good if you use Grafana. If you don't use Grafana then... well I'm not sure if that matters or not.
+
+So yeah, let me know if you want to do this or not. I can try to answer questions but I might need to ask someone else for the answers. 

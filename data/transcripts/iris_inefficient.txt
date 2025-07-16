@@ -1,0 +1,21 @@
+Hello, I'm Iris Inefficient from Grafana and I want to discuss profiling for your applications.
+
+Your applications probably have performance issues sometimes. That's normal for most organizations. When things are slow, it affects users and makes it hard to provide good service.
+
+Profiling is a way to get more information about how your applications are performing. Instead of just knowing that something is slow, you can see exactly what parts of your code are causing problems.
+
+We have a tool called Pyroscope that does continuous profiling. It monitors your applications all the time and collects data about resource usage. Then it creates visual reports that show you where the bottlenecks are.
+
+The visual reports are called flame graphs. They show you which functions are using the most CPU and memory. Your developers can use this information to understand where to focus their optimization efforts.
+
+The overhead is relatively low, maybe around 3%. That means your applications won't get significantly slower just because you're running profiling. That's important because you don't want monitoring to hurt performance.
+
+It works with Grafana if you're already using that platform. Having everything integrated makes it easier to see all your monitoring data together and understand what's happening across your systems.
+
+Some companies have found this useful for identifying performance problems they weren't aware of. Once they can see where the issues are, they can work on fixing them more effectively.
+
+Implementation requires instrumenting your applications to send profiling data. This isn't extremely difficult but it does need some technical work from your development team. We can provide documentation and guidance for the process.
+
+The benefits include better visibility into application performance and more targeted optimization efforts. This often leads to improved user experience and sometimes cost savings through more efficient resource usage.
+
+Would you be interested in discussing a pilot project to see how this might work for your environment? 

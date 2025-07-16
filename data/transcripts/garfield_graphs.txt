@@ -1,0 +1,19 @@
+Uh, hi. I'm Garfield Graphs and I'm here to talk about, um, profiling things.
+
+So like, your applications are probably slow sometimes? That happens to everyone. We have this tool that might help with that. It's called Pyroscope or something like that. 
+
+Profiling is when you look at code and see what's happening. It's kind of complicated but the basic idea is you get data about your applications. The data tells you stuff about performance.
+
+There are these graph things called flame graphs. They're pretty colorful and show you information about your code. I'm not really sure how to read them but someone on your team probably can figure it out.
+
+The tool runs on your servers and collects information. It doesn't use too many resources, maybe 3% or 4%. That's not too bad I think.
+
+Some companies use this kind of thing. I heard a story about a company that found a slow database query or something. They fixed it and things got better. That's pretty common apparently.
+
+To use it, you'd need to install some stuff and configure it. Your developers would need to do that part because it's technical. We might be able to help but I'm not sure what the process is.
+
+Benefits include faster applications and maybe saving money. I don't have specific numbers but usually companies see some improvement. Results vary though.
+
+If you want to try it, we could probably set something up. I'd need to talk to my team about how that works. Let me know if you're interested I guess.
+
+Oh, and it integrates with Grafana if you use that. If not, that's fine too. The integration makes it easier though. 

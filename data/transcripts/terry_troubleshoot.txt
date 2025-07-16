@@ -1,0 +1,19 @@
+Hey there, I'm Terry Troubleshoot from Grafana and I want to tell you about profiling.
+
+So you guys have applications and sometimes they're slow, right? That's where we come in. Profiling is like monitoring but for code. It tells you which parts of your code are slow.
+
+We have this product called Pyroscope. It's pretty good. It runs on your applications and collects data about performance. The data shows up in charts and graphs, which are useful for understanding what's going on.
+
+Your developers can look at these charts and see where problems are. It's better than guessing, which is what most people do when their applications are slow. Instead of spending days debugging, they can find issues faster.
+
+There's this thing called flame graphs that shows your code performance. They're kind of like a map of your application, showing which functions use the most resources. It takes some getting used to but developers usually figure it out.
+
+The overhead is low, maybe 2-3%. That means it won't make your applications slower, which is important because nobody wants monitoring tools that hurt performance.
+
+Some companies have used this and gotten good results. I can't remember specific numbers but they saved money and made their applications faster. That's usually what happens.
+
+To set it up, your team would need to install some software and configure it. It's not super complicated but it does require some technical work. We can help with that if needed.
+
+The main benefits are finding performance problems and fixing them. This usually leads to cost savings and better user experience. Most companies are happy with the results.
+
+We could start with a small trial to see how it works for you. Let me know if you're interested and we can discuss next steps. 

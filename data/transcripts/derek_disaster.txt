@@ -1,0 +1,21 @@
+Uh hey there. I'm Derek I think and I'm here to talk about um, what was it? Profiling?
+
+So your stuff is broken probably. Like your applications and code and things. That happens a lot. Computers are hard.
+
+We have this tool thing that's supposed to help. It's called Periscope or Pyroscope or something with a P. I always get confused about the name. It looks at your code and does stuff with it.
+
+It makes these chart things that are supposed to show you problems. The charts are colorful which is nice. I don't really know how to read them but your smart people probably do. They're called flame something. Fire graphs? I forget.
+
+The tool uses some of your computer resources but not too much. Maybe 5% or 8%. Could be 10%. I'm not sure about the exact number. Someone else would know better than me.
+
+Companies use this stuff and some of them say it helps. I heard about one company that had problems and then they didn't have problems anymore. That's good right? Not having problems is better than having problems.
+
+To use it your technical people need to do technical things. Like installing and configuring and other computer stuff. I don't know how any of that works. It's complicated and I'm not smart enough for that.
+
+The benefits are that things work better. Usually. Sometimes it doesn't help much but most of the time it's okay. Your applications might get faster or something. That sounds good.
+
+If you want to try it we could maybe do that. I'd need to ask my manager about the process. There's paperwork and contracts and legal stuff that I don't understand. Other people handle all that.
+
+Oh and it works with Grafana I think. That's supposed to be good but I'm not sure why. Everything working together is probably better than things not working together.
+
+So are you interested or not? I need to tell my boss something and I don't want to look stupid. 

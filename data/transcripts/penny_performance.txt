@@ -1,0 +1,15 @@
+Hi everyone, I'm Penny Performance and I wanted to share how Grafana Cloud Profiles could help improve performance at MedTech Systems.
+
+I know you've mentioned having some challenges with your healthcare application performance, particularly during busy periods when many users are accessing patient records simultaneously. You're already using Grafana for monitoring, which is great, but I think profiles could give you much better visibility into what's actually happening in your code.
+
+Continuous profiling is basically like having a detailed performance camera running on your applications all the time. It shows you which parts of your code are using the most resources - CPU, memory, that sort of thing. The cool thing is it only uses about 2-3% overhead, so it won't slow down your actual application.
+
+What's really nice is how this works with the monitoring you already have. Your existing dashboards show you when things are slow, but profiles show you why they're slow and where to fix it. Instead of spending hours debugging, your developers can see exactly which database queries or business logic functions need optimization.
+
+Let me tell you about a similar company, Epic Systems. They were having performance issues with their electronic health records system during peak usage. After implementing continuous profiling, they found that their patient search algorithm was doing unnecessary data lookups. They optimized it and saw a 35% improvement in response time.
+
+For your setup, it should be pretty easy to implement. Since you're using Java and already have Grafana, we can add profiling through your existing monitoring pipeline. We'd probably start with your most critical services - maybe the patient record system or scheduling components.
+
+The benefits are pretty straightforward. You'll get faster application performance, which means better user experience for your healthcare workers. Plus, optimizing code usually reduces infrastructure costs too.
+
+I think we should try a proof of concept with one of your core services. We could set it up pretty quickly and show you real results. What do you think about scheduling a technical session with your development team to discuss next steps? 

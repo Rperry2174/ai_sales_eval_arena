@@ -1,0 +1,19 @@
+Uh hi I'm Oscar and I think I'm supposed to talk about some profiling thing.
+
+Your applications are probably broken or slow or something like that. That happens to everyone. Computers are hard and they break a lot.
+
+We have this tool that might help. I think it's called Pyroscope or maybe Periscope. The name is confusing and I always forget which one it is.
+
+It does something with your code and makes charts. The charts are supposed to show you things but I'm not really sure what things. They have colors which is nice I guess.
+
+The overhead is supposed to be low. Maybe 3% or 5% or something. I'm not good with numbers so I'm not sure about that. Someone else would know better.
+
+Some companies have used this and they said it helped. I heard about one company that had problems and then they didn't have as many problems. That's good right?
+
+To use it your technical people would need to do technical stuff. Like installing and configuring and other things that I don't understand. It's complicated.
+
+The benefits are that your applications might work better. Or they might get faster. Or use less resources. That sounds good but I'm not sure if it always works.
+
+If you want to try it we could probably set something up. I'd need to ask someone else about how to do that because I don't know the process.
+
+So are you interested or not? I need to know because I have to tell my manager what happened. 

@@ -1,0 +1,19 @@
+Hi there, I'm Tina Timeout and I want to tell you about profiling for your applications.
+
+So you probably have applications that are slow sometimes. That's pretty common. Lots of companies deal with slow applications and it's annoying when you can't figure out why.
+
+Profiling is a way to look at your applications and see what's taking up resources. It's like having x-ray vision for your code. You can see which parts are working hard and which parts might be causing problems.
+
+We have this tool called Pyroscope that does continuous profiling. It runs all the time and collects data about your application performance. Then it shows you charts and graphs that help you understand what's happening.
+
+The charts are called flame graphs and they're pretty interesting looking. They show you which functions are using CPU and memory. Your developers can look at these and figure out where the bottlenecks are.
+
+The overhead is low, maybe around 3%. That means your applications won't slow down much just because you're monitoring them. That's important because you don't want the monitoring to cause more problems.
+
+Some companies have used this and found it helpful. They discovered performance issues they didn't know about and were able to fix them. Usually this leads to faster applications and sometimes cost savings too.
+
+To set it up, your team would need to instrument your applications to send profiling data. It's not super difficult but it does require some technical work. We have documentation and support to help with the implementation.
+
+The main benefits are finding and fixing performance problems. This usually results in better user experience and potentially lower infrastructure costs when your code runs more efficiently.
+
+We could start with a trial to see how it works for your specific use case. That would let you evaluate the tool without making a big commitment upfront. Are you interested in exploring this option? 

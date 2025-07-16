@@ -1,0 +1,19 @@
+Uh hello I'm Pablo and I'm supposed to talk about profiling stuff but I'm not really sure what to say.
+
+Your computers are probably broken or slow or something. That's what usually happens with computers. They start working and then they stop working good.
+
+We have this thing that's supposed to help. I think it's called Pyro-scope or maybe it's Periscope. I always forget the name. It does something with your code but I'm not really sure what exactly.
+
+There are these graph things that show you stuff about your applications. They have colors and shapes and things. I don't really understand them but your computer people probably do. They're smarter than me about that stuff.
+
+The tool uses some of your computer's power. Maybe 3% or 5% or something like that. Could be more. I'm not good with percentages. Math was never my strong subject in school.
+
+Some companies have used this and they say it helps. I heard about one company that had problems and then they didn't have as many problems. That's good I think. Having fewer problems is better than having more problems.
+
+To use it your technical people would need to do technical things. Like installing and setting up and configuring and other computer stuff that I don't understand. It's all very complicated and over my head.
+
+The benefits are that your applications work better supposedly. Maybe they get faster or use less resources or something. That sounds good but I'm not really sure if it always works out that way.
+
+If you want to try this we could probably figure out how to do that. I'd need to ask someone else about the process because I don't know how any of that works. There's contracts and paperwork and legal stuff that other people handle.
+
+So are you interested or should I tell my boss that you're not interested? I need to know because I have to write a report about this meeting. 

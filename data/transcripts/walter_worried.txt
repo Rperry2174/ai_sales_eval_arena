@@ -1,0 +1,19 @@
+Hello, I'm Walter Worried from Grafana and I wanted to talk about profiling for your applications.
+
+I'm a bit nervous about this presentation but I'll do my best. Your applications probably have some performance issues, which is pretty normal for most companies. When things are slow, it can be really frustrating for users and hard to troubleshoot.
+
+We have this tool called Pyroscope that might help. It does continuous profiling, which means it monitors your applications all the time and collects data about performance. I hope I'm explaining this correctly.
+
+The tool creates visual reports called flame graphs. They show you which parts of your code are using the most resources. I think they're supposed to be helpful for developers to understand where bottlenecks are happening.
+
+The overhead is supposed to be low, maybe around 3%. I hope that's right. That means your applications shouldn't slow down much just because you're monitoring them, which is good because you don't want monitoring to cause more problems.
+
+It integrates with Grafana if you're already using that platform. I think having everything together makes it easier to see all your monitoring data, though I'm not 100% sure about all the technical details.
+
+Some companies have used this and found performance problems they didn't know about. Once they could see where the issues were, they could work on fixing them. At least that's what I've been told.
+
+To implement it, your developers would need to add some instrumentation to your applications. I'm not sure exactly how complicated that is, but we can provide documentation and support to help.
+
+The benefits include better visibility into performance and more effective optimization. This usually leads to improved user experience and potentially some cost savings.
+
+Would you maybe be interested in trying a pilot project? I think that might be a good way to see if it works for your specific situation without too much commitment. 

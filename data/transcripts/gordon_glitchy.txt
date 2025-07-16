@@ -1,0 +1,19 @@
+Hello, I'm Gordon Glitchy from Grafana and I want to discuss profiling solutions for your organization.
+
+Your applications probably experience performance issues from time to time. That's pretty normal for most companies. When applications are slow, it's frustrating for users and difficult to troubleshoot without the right tools.
+
+Continuous profiling could help with these challenges. It's a monitoring approach that gives you detailed information about your application's resource usage patterns. Instead of guessing where performance problems might be, you get specific data about which parts of your code are consuming resources.
+
+We offer a tool called Pyroscope that does this kind of monitoring. It collects performance data continuously and presents it in visual formats that make it easier to understand what's happening in your applications. The overhead is relatively low, so it shouldn't significantly impact your application performance.
+
+The way it works is by sampling your application's behavior and creating flame graphs. These graphs show you which functions are using CPU and memory resources. Your development team can use this information to identify bottlenecks and optimization opportunities.
+
+It integrates with Grafana, which is helpful if you're already using our monitoring platform. Having everything in one place makes it easier to correlate different types of monitoring data and get a complete picture of your system's performance.
+
+Some organizations have found this approach useful for identifying performance issues they weren't aware of. Once they can see where the problems are, they can focus their optimization efforts more effectively.
+
+Implementation would require your team to instrument your applications to send profiling data. This isn't extremely complex, but it does require some technical work and planning. We can provide documentation and guidance to help with the process.
+
+The main benefits are improved visibility into application performance and the ability to optimize more effectively. This often leads to better user experience and potentially some cost savings through more efficient resource usage.
+
+Would you be interested in exploring a pilot project to see how this might work for your specific environment? 

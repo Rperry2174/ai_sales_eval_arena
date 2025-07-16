@@ -1,0 +1,17 @@
+Good morning, I'm Wendy Widgets and I'm here to present how Grafana Cloud Profiles can optimize performance for WidgetCorp Manufacturing.
+
+From our previous discussions, I understand you're running a complex manufacturing execution system that coordinates production across multiple facilities. You've mentioned experiencing performance bottlenecks during peak production periods, and your IT team spends considerable time troubleshooting system slowdowns that impact production schedules.
+
+Continuous profiling is particularly valuable for manufacturing systems because of their real-time requirements. When production lines depend on millisecond responses from your scheduling algorithms, even small performance degradations can cascade into significant operational delays. Pyroscope provides the code-level visibility needed to prevent these issues.
+
+The profiling process works by continuously monitoring your application's resource consumption patterns. It identifies which specific functions - whether they're inventory calculations, scheduling algorithms, or equipment monitoring routines - are consuming the most CPU and memory resources. The overhead is minimal, typically under 2% CPU usage, so it won't interfere with your critical production systems.
+
+This fits seamlessly into your existing Grafana monitoring infrastructure. Your current dashboards track production metrics and system health, while profiles add the missing layer of code-level performance data. When your production monitoring alerts indicate system slowdowns, profiles immediately show you whether it's the job scheduling logic, inventory tracking functions, or equipment interface code causing the bottleneck.
+
+I want to share a relevant example from Siemens, who implemented continuous profiling in their factory automation systems. They were experiencing intermittent delays in their production line control software that were causing costly manufacturing interruptions. Using profiling data, they discovered their real-time data processing algorithms had inefficient memory allocation patterns. By optimizing these functions, they reduced system response times by 40% and eliminated 85% of production delays.
+
+For WidgetCorp, implementation would leverage your existing Java-based manufacturing systems. Your MES applications and production control services can immediately start sending profile data through your current monitoring pipeline. We'd prioritize your most time-sensitive systems first - production scheduling, quality control, and equipment monitoring.
+
+The operational impact is substantial. More responsive manufacturing systems mean fewer production delays, improved throughput, and better adherence to delivery schedules. Many manufacturers see 15-25% improvement in system efficiency, which translates directly to increased production capacity without additional hardware investment.
+
+I propose we begin with a pilot focusing on your main production facility's scheduling system. We can implement profiling during your next maintenance window and demonstrate measurable improvements within the first week. Would your operations team be available for a technical planning session next Wednesday? 

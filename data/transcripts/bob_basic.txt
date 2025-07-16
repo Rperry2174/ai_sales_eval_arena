@@ -1,0 +1,19 @@
+Hi, I'm Bob Basic from Grafana and I want to talk about this profiling thing we have.
+
+So your applications are probably slow sometimes. That's pretty normal. Most companies have slow applications. It's frustrating when you can't figure out why things are slow.
+
+We have this tool called Pyroscope that helps with that. It looks at your code and shows you which parts are using the most resources. It's like having a magnifying glass for your applications.
+
+The way it works is it collects data about your application performance. Then it makes these charts that show you where the problems are. The charts are called flame graphs. They're kind of complicated looking but once you understand them they're useful.
+
+It integrates with Grafana, which is good if you're already using Grafana for monitoring. If you're not using Grafana then it still works but it's better when everything is together.
+
+The overhead is pretty low. Maybe 3% or so. That means your applications won't get much slower just because you're monitoring them. That's important because nobody wants monitoring to cause more problems.
+
+Some companies have used this and found it helpful. I don't have specific examples right now but generally people find performance bottlenecks they didn't know about. Then they fix them and things get better.
+
+To implement it, your developers would need to add some code to send profiling data. It's not super complicated but it does require some work. We can provide support and documentation to help with that.
+
+The benefits are usually better application performance and sometimes cost savings. When your code runs more efficiently, you might not need as much infrastructure. That saves money.
+
+We could do a trial if you want to see how it works for your specific applications. That would give you a chance to evaluate it without a big commitment. What do you think about that? 

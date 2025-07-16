@@ -1,0 +1,17 @@
+Hi everyone, Sally Sampling here to talk about profiling stuff for your company.
+
+So basically, you guys are having some performance problems with your applications, right? That's pretty common. Lots of companies have slow applications and don't really know why. It's like, you know something is wrong but you can't figure out exactly what's causing it.
+
+That's where profiling comes in. It's this tool that looks at your code and tells you what's slow. Pretty neat, actually. We call it continuous profiling because it runs all the time, not just when you remember to turn it on.
+
+The way it works is it samples your application performance and creates these flame graphs. Flame graphs are these colorful charts that show you which parts of your code are using resources. They look kind of complicated at first but once you get used to them they're pretty useful.
+
+We have this thing called Pyroscope, which is the profiling tool. It integrates with Grafana, which you might already be using for monitoring. If you're not using Grafana, that's okay too, but it works better if you are.
+
+I heard about this company that used profiling and they found some slow database queries that were causing problems. After they fixed them, their application got faster. I don't remember all the details, but it was a good success story.
+
+For your implementation, we'd need to add some code to your applications to send profiling data. It's not too hard, but your developers would need to do some work. The overhead is pretty low though, maybe 3% or something like that.
+
+The benefits are faster applications and maybe some cost savings from optimizing your infrastructure. Most companies see some improvement, though results can vary.
+
+We could do a trial run if you're interested. I'd need to check with my team about timeline and stuff, but it shouldn't take too long to get started. What do you think? 
