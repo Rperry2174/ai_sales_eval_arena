@@ -120,5 +120,6 @@ dmypy.json
 *.gif
 *.html
 tournament_progression.gif
-complete_numbered_tournament/
+data/output/
+data/test_output/
 numbered_tournament_results/

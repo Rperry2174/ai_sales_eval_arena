@@ -2,7 +2,7 @@
 Unified Tournament Test System
 
 This test can run tournaments with:
-- ANY transcript directory (data/transcripts, test_data/transcripts, etc.)
+- ANY transcript directory (data/transcripts, data/test_transcripts, etc.)
 - CUSTOM rubric and comparison instructions 
 - REAL production tournament system
 - Complete visualizations including GIF with all participants
@@ -248,8 +248,8 @@ def create_tournament_progression_gif(tournament, output_dir: Path) -> str:
                 participant_wins[p_id].append(current_wins[p_id])
             match_times.append(f"Match {i+1}")
         
-        # Create the animated plot
-        fig, ax = plt.subplots(figsize=(14, 10))  # Larger to accommodate more participants
+        # Create the animated plot (optimized for horizontal bars)
+        fig, ax = plt.subplots(figsize=(10, 14))  # Taller to accommodate horizontal bars with participant names
         
         # Colors for each participant (expand beyond 10 if needed)
         num_participants = len(tournament.participants)
@@ -267,8 +267,11 @@ def create_tournament_progression_gif(tournament, output_dir: Path) -> str:
             wins_to_plot = []
             colors_to_plot = []
             
-            # Sort participants by name for consistent ordering (Number 1, Number 10, Number 11, Number 2, etc.)
-            sorted_participants = sorted(tournament.participants, key=lambda p: participant_names[p.id])
+            # Sort participants by current wins (descending) for better visual impact with horizontal bars
+            # This puts the current leader at the top of the chart
+            participants_with_wins = [(p, participant_wins[p.id][frame]) for p in tournament.participants]
+            sorted_participants = sorted(participants_with_wins, key=lambda x: (x[1], participant_names[x[0].id]), reverse=True)
+            sorted_participants = [p[0] for p in sorted_participants]  # Extract just the participants
             
             for i, participant in enumerate(sorted_participants):
                 participant_name = participant_names[participant.id]
@@ -278,24 +281,24 @@ def create_tournament_progression_gif(tournament, output_dir: Path) -> str:
                 wins_to_plot.append(wins_at_frame)
                 colors_to_plot.append(colors[i % len(colors)])  # Handle more than 20 participants
             
-            # Create bar chart
-            bars = ax.bar(participants_to_plot, wins_to_plot, color=colors_to_plot, alpha=0.8)
+            # Create horizontal bar chart (vertical layout)
+            bars = ax.barh(participants_to_plot, wins_to_plot, color=colors_to_plot, alpha=0.8)
             
             # Customize the plot
-            ax.set_ylabel('Wins', fontsize=16)
+            ax.set_xlabel('Wins', fontsize=16)
             ax.set_title(f'Tournament Progression - {match_times[frame]}', fontsize=18, fontweight='bold')
-            ax.set_ylim(0, max(max(wins) for wins in participant_wins.values()) + 1)
+            ax.set_xlim(0, max(max(wins) for wins in participant_wins.values()) + 1)
             
-            # Rotate x-axis labels for better readability
-            plt.setp(ax.get_xticklabels(), rotation=45, ha='right', fontsize=12)
+            # Y-axis labels are readable without rotation for horizontal bars
+            plt.setp(ax.get_yticklabels(), fontsize=12)
             
             # Add value labels on bars
             for bar, wins in zip(bars, wins_to_plot):
                 if wins > 0:
-                    ax.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.05,
-                           f'{wins}', ha='center', va='bottom', fontweight='bold', fontsize=10)
+                    ax.text(bar.get_width() + 0.05, bar.get_y() + bar.get_height()/2.,
+                           f'{wins}', ha='left', va='center', fontweight='bold', fontsize=10)
             
-            ax.grid(axis='y', alpha=0.3)
+            ax.grid(axis='x', alpha=0.3)
             plt.tight_layout()
         
         # Create animation
@@ -367,7 +370,7 @@ async def test_tournament_with_data_dir(arena_config):
 @pytest.mark.asyncio
 async def test_tournament_with_test_data(arena_config):
     """
-    Test tournament with test_data/transcripts using numbered comparison instructions.
+    Test tournament with data/test_transcripts using numbered comparison instructions.
     
     This demonstrates custom rubric for simple numerical comparison testing.
     """
@@ -376,7 +379,7 @@ async def test_tournament_with_test_data(arena_config):
     if not arena_config.anthropic_api_key or "test-key" in arena_config.anthropic_api_key:
         pytest.skip("No real Anthropic API key provided - skipping real tournament test")
     
-    transcript_dir = Path("test_data/transcripts")
+    transcript_dir = Path("data/test_transcripts")
     
     if not transcript_dir.exists():
         pytest.skip(f"No test data directory found at {transcript_dir}")
@@ -463,7 +466,7 @@ async def test_tournament_basic_loading():
     Basic test to verify transcript loading works without API calls.
     """
     
-    test_dir = Path("test_data/transcripts")
+    test_dir = Path("data/test_transcripts")
     
     if not test_dir.exists():
         pytest.skip(f"No test data directory found at {test_dir}")
@@ -510,12 +513,12 @@ if __name__ == "__main__":
             epilog="""
 Examples:
   # Basic run with test data and built-in numbered instructions
-  pipenv run python tests/test_simple_tournament.py --transcript-dir test_data/transcripts
+  pipenv run python tests/test_simple_tournament.py --transcript-dir data/test_transcripts
   
   # Custom tournament with your own evaluation criteria
   pipenv run python tests/test_simple_tournament.py \\
     --transcript-dir data/transcripts \\
-    --output-dir sales_tournament_results \\
+    --output-dir data/sales_results \\
     --tournament-name "Q4 Sales Pitch Championship" \\
     --custom-instructions "Evaluate based on technical depth and customer focus..." \\
     --verbose
@@ -531,14 +534,14 @@ Examples:
         parser.add_argument(
             "--transcript-dir",
             type=str,
-            default="test_data/transcripts",
+            default="data/test_transcripts",
             help="Directory containing transcript files (.txt files)"
         )
         
         parser.add_argument(
             "--output-dir", 
             type=str,
-            default="tournament_results",
+            default="data/test_output",
             help="Directory to save results and visualizations"
         )
         
@@ -606,9 +609,9 @@ Examples:
         # Determine custom instructions
         custom_instructions = args.custom_instructions
         
-        # Use built-in numbered instructions for test_data if no custom instructions provided
-        if not custom_instructions and transcript_dir.name == "transcripts" and transcript_dir.parent.name == "test_data":
-            print(f"🔢 Using built-in numbered evaluation instructions for test_data")
+        # Use built-in numbered instructions for test_transcripts if no custom instructions provided
+        if not custom_instructions and transcript_dir.name == "test_transcripts" and transcript_dir.parent.name == "data":
+            print(f"🔢 Using built-in numbered evaluation instructions for test_transcripts")
             custom_instructions = """
 You are evaluating numbered sales pitches for testing purposes.
 
