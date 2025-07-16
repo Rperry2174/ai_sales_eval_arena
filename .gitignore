@@ -115,3 +115,10 @@ dmypy.json
 *.tmp
 *.temp
 *.log
+
+# Large files and build artifacts
+*.gif
+*.html
+tournament_progression.gif
+complete_numbered_tournament/
+numbered_tournament_results/
