@@ -3,8 +3,9 @@
 import asyncio
 import json
 import logging
+from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict
 import sys
 
 import click
@@ -16,12 +17,20 @@ from rich import print as rprint
 
 from .models import TournamentFormat, ArenaConfig, VisualizationConfig
 from .tournament import TournamentManager
-from .transcript_loader import create_sample_data
+from .transcript_loader import create_sample_data, TranscriptLoader
 from .visualization import TournamentVisualizer
 from .config import get_config
+from .outputs import create_tournament_progression_gif, append_history_entry
 
 console = Console()
 logger = logging.getLogger(__name__)
+
+
+def _read_text_file(path: Optional[str]) -> Optional[str]:
+    if not path:
+        return None
+    with open(path, "r", encoding="utf-8") as handle:
+        return handle.read()
 
 
 @click.group()
@@ -151,6 +160,148 @@ def create_tournament(
         rprint(f"\n[green]✓[/green] Tournament completed! Results saved to: {output_path}")
     
     # Run the async function
+    try:
+        asyncio.run(run_tournament())
+    except KeyboardInterrupt:
+        rprint("\n[red]Tournament cancelled by user[/red]")
+        sys.exit(1)
+    except Exception as e:
+        rprint(f"\n[red]Error running tournament: {e}[/red]")
+        sys.exit(1)
+
+
+@cli.command("run-corpus")
+@click.option('--name', '-n', default="Corpus Tournament", help='Tournament name')
+@click.option('--description', '-d', help='Tournament description')
+@click.option('--transcripts-dir', '-t', required=True, type=click.Path(exists=True),
+              help='Directory containing plain text transcript files (one file per participant)')
+@click.option('--rubric-file', type=click.Path(exists=True),
+              help='Path to rubric text/markdown file (required for meaningful evaluation)')
+@click.option('--evaluation-context-file', type=click.Path(exists=True),
+              help='Path to evaluation context file (optional)')
+@click.option('--individual-prompt-file', type=click.Path(exists=True),
+              help='Path to full individual evaluation prompt template (optional)')
+@click.option('--comparative-prompt-file', type=click.Path(exists=True),
+              help='Path to full comparative prompt template (optional)')
+@click.option('--format', '-f', 'tournament_format',
+              type=click.Choice(['round_robin', 'single_elimination', 'double_elimination']),
+              default='round_robin', show_default=True, help='Tournament format')
+@click.option('--output-dir', '-o', type=click.Path(), default='results',
+              help='Base output directory for results')
+@click.option('--export-gif/--no-export-gif', default=True, show_default=True,
+              help='Generate tournament progression GIF')
+@click.pass_context
+def run_corpus(
+    ctx: click.Context,
+    name: str,
+    description: Optional[str],
+    transcripts_dir: str,
+    rubric_file: Optional[str],
+    evaluation_context_file: Optional[str],
+    individual_prompt_file: Optional[str],
+    comparative_prompt_file: Optional[str],
+    tournament_format: str,
+    output_dir: str,
+    export_gif: bool
+) -> None:
+    """Run a tournament over a directory of plain text transcripts.
+    
+    Each .txt file in the transcripts directory represents one participant.
+    The filename (without extension) is used as the participant name.
+    
+    Example: transcripts/alice_smith.txt -> Participant "Alice Smith"
+    """
+
+    config = ctx.obj['config']
+
+    rubric_text = _read_text_file(rubric_file)
+    if rubric_text is not None:
+        config.rubric_text = rubric_text
+
+    context_text = _read_text_file(evaluation_context_file)
+    if context_text is not None:
+        config.evaluation_context_text = context_text
+
+    individual_prompt = _read_text_file(individual_prompt_file)
+    if individual_prompt is not None:
+        config.individual_prompt_template = individual_prompt
+
+    comparative_prompt = _read_text_file(comparative_prompt_file)
+    if comparative_prompt is not None:
+        config.comparative_prompt_template = comparative_prompt
+
+    format_map = {
+        'round_robin': TournamentFormat.ROUND_ROBIN,
+        'single_elimination': TournamentFormat.SINGLE_ELIMINATION,
+        'double_elimination': TournamentFormat.DOUBLE_ELIMINATION
+    }
+    tournament_fmt = format_map[tournament_format]
+
+    async def run_tournament():
+        output_base = Path(output_dir)
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        output_path = output_base / timestamp
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            # Load transcript data
+            task1 = progress.add_task("Loading transcripts...", total=None)
+            loader = TranscriptLoader(Path(transcripts_dir))
+            participant_list, transcript_list = loader.load_all_transcripts()
+            progress.update(task1, completed=True)
+
+            # Create tournament manager
+            task2 = progress.add_task("Setting up tournament...", total=None)
+            manager = TournamentManager(config)
+            progress.update(task2, completed=True)
+
+            # Run tournament
+            task3 = progress.add_task("Running AI evaluations...", total=None)
+            tournament = await manager.create_and_run_tournament(
+                name=name,
+                description=description,
+                participants=participant_list,
+                transcripts=transcript_list,
+                tournament_format=tournament_fmt
+            )
+            progress.update(task3, completed=True)
+
+            # Save results
+            task4 = progress.add_task("Saving results...", total=None)
+            with open(output_path / "tournament_results.json", "w", encoding="utf-8") as handle:
+                json.dump(tournament.dict(), handle, indent=2, default=str)
+            progress.update(task4, completed=True)
+
+            # Generate visualizations
+            task5 = progress.add_task("Creating visualizations...", total=None)
+            viz_config = config.visualization
+            visualizer = TournamentVisualizer(viz_config)
+            visualizer.export_visualizations(tournament, output_path / "visualizations")
+            progress.update(task5, completed=True)
+
+            # Optional GIF export
+            if export_gif:
+                create_tournament_progression_gif(tournament, output_path)
+
+            # Append history entry
+            history_file = output_base / "history.jsonl"
+            append_history_entry(
+                history_file=history_file,
+                tournament=tournament,
+                model=config.anthropic_model,
+                rubric_text=rubric_text,
+                input_dir=transcripts_dir,
+                input_format="plain_txt",
+                output_dir=str(output_path)
+            )
+
+        _display_tournament_results(tournament)
+        rprint(f"\n[green]✓[/green] Tournament completed! Results saved to: {output_path}")
+
     try:
         asyncio.run(run_tournament())
     except KeyboardInterrupt:

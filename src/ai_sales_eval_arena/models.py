@@ -201,6 +201,10 @@ class ArenaConfig(BaseModel):
     anthropic_model: str = "claude-3-5-sonnet-20241022"
     max_concurrent_matches: int = Field(5, gt=0, le=20)
     grading_timeout_seconds: int = Field(60, gt=0)
+    rubric_text: Optional[str] = None
+    evaluation_context_text: Optional[str] = None
+    individual_prompt_template: Optional[str] = None
+    comparative_prompt_template: Optional[str] = None
     visualization: VisualizationConfig = Field(default_factory=VisualizationConfig)
     data_directory: str = "data"
     results_directory: str = "results"

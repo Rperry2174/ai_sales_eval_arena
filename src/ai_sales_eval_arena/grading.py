@@ -18,8 +18,20 @@ logger = logging.getLogger(__name__)
 
 
 class GradingPrompts:
-    """Centralized prompt templates for grading."""
+    """Centralized prompt templates for grading.
     
+    These are DEFAULT templates. When using the library generically, you MUST provide
+    your own rubric_text and evaluation_context_text via ArenaConfig, otherwise
+    the defaults below (which are Pyroscope-specific examples) will be used.
+    """
+    
+    # Generic fallback context - users should always override this
+    DEFAULT_CONTEXT = """
+You are evaluating sales pitch quality. Consider the overall effectiveness of the pitch
+including clarity, persuasiveness, objection handling, and value proposition communication.
+"""
+
+    # Generic fallback rubric - users should always override this
     RUBRIC = """
 # Sales Pitch Evaluation Rubric
 
@@ -31,64 +43,22 @@ class GradingPrompts:
 
 ## Evaluation Criteria
 
-### 1. ICP Alignment (Ideal Customer Profile)
-**4 (Excellent)**: Demonstrates deep research with 75%+ ICP criteria met, uses specific company examples, shows clear understanding of prospect's business model and challenges.
-
-**3 (Very Good)**: Shows good research with 50-74% ICP criteria met, references relevant industry trends or company information.
-
-**2 (Good)**: Basic research evident with 25-49% ICP criteria met, general industry knowledge without specific company details.
-
-**1 (Needs Improvement)**: Little to no research evident, 0-24% ICP criteria met, generic approach without customization.
-
-### 2. PBO Messaging Alignment (Positive Business Outcomes)
-**4 (Excellent)**: Messaging precisely tied to specific lead pain points, quantifies business impact, connects technical features to business outcomes.
-
-**3 (Very Good)**: Good messaging alignment with clear business benefits, some quantification of impact.
-
-**2 (Good)**: Accurate messaging but limited impact for target personas, generic business benefits.
-
-**1 (Needs Improvement)**: Poor alignment with PBOs, focuses on features without business context.
-
-### 3. Continuous Profiling Explanation
-**4 (Excellent)**: Clear, detailed explanation with concrete examples, explains benefits and differentiators, uses appropriate technical depth for audience.
-
-**3 (Very Good)**: Clear explanation with good understanding, lacks some depth or examples.
-
-**2 (Good)**: High-level explanation of profiling concepts without sufficient specificity or examples.
-
-**1 (Needs Improvement)**: Vague or confusing explanation, demonstrates poor understanding of the technology.
-
-### 4. Observability Context
-**4 (Excellent)**: Explains profiling in context of 2+ observability signals (metrics, logs, traces), shows how they complement each other.
-
-**3 (Very Good)**: Explains profiling in context of 1 observability signal, good understanding of ecosystem.
-
-**2 (Good)**: Mentions observability concepts but doesn't clearly connect profiling to the broader ecosystem.
-
-**1 (Needs Improvement)**: No connection to observability signals, treats profiling as isolated tool.
-
-### 5. Talk Track Alignment
-**4 (Excellent)**: High PBO accuracy effectively tied to account research, natural flow, handles objections proactively.
-
-**3 (Very Good)**: Good PBO accuracy with adequate research connection, mostly natural delivery.
-
-**2 (Good)**: Accurate messaging but limited research integration, some awkward transitions.
-
-**1 (Needs Improvement)**: Poor accuracy, little research integration, choppy or confusing delivery.
+Evaluate the pitch holistically considering:
+- Research and preparation quality
+- Clear communication of value proposition
+- Handling of objections and questions
+- Natural flow and delivery
+- Connection of features to business outcomes
 """
 
     INDIVIDUAL_EVALUATION = """
-You are an expert sales trainer evaluating a sales pitch for Pyroscope (continuous profiling tool). 
+You are an expert evaluator assessing a performance.
 
 ## Context
-Pyroscope helps developers optimize application performance by providing continuous, code-level profiling data. Key value propositions:
-- Faster incident resolution through code-level visibility
-- Reduced infrastructure costs via optimization insights  
-- Improved application reliability and performance
-- Seamless integration with existing observability stack
+{context}
 
 ## Your Task
-Evaluate this sales pitch transcript against the provided rubric. Be thorough, fair, and constructive in your feedback.
+Evaluate this transcript against the provided rubric. Be thorough, fair, and constructive in your feedback.
 
 ## Rubric
 {rubric}
@@ -98,69 +68,37 @@ Evaluate this sales pitch transcript against the provided rubric. Be thorough, f
 
 ## Instructions
 1. Read the transcript carefully
-2. Evaluate each criterion using the 4-point scale
-3. Provide specific examples from the transcript to support your scores
+2. Evaluate against the criteria in the rubric using the scoring scale
+3. Provide specific examples from the transcript to support your assessment
 4. Offer constructive feedback for improvement
-5. Calculate an overall score (average of all criteria)
+5. Calculate an overall score
 
-Respond ONLY with valid JSON in this exact format:
+Respond ONLY with valid JSON in this format:
 {{
   "criterion_grades": [
     {{
-      "criterion": "icp_alignment",
+      "criterion": "criterion_name_from_rubric",
       "score": 3.0,
-      "explanation": "Specific explanation with examples from transcript",
-      "feedback": "Constructive suggestions for improvement"
-    }},
-    {{
-      "criterion": "pbo_messaging",
-      "score": 2.0,
-      "explanation": "Specific explanation with examples from transcript", 
-      "feedback": "Constructive suggestions for improvement"
-    }},
-    {{
-      "criterion": "profiling_explanation",
-      "score": 4.0,
-      "explanation": "Specific explanation with examples from transcript",
-      "feedback": "Constructive suggestions for improvement"
-    }},
-    {{
-      "criterion": "observability_context", 
-      "score": 3.0,
-      "explanation": "Specific explanation with examples from transcript",
-      "feedback": "Constructive suggestions for improvement"
-    }},
-    {{
-      "criterion": "talk_track_alignment",
-      "score": 2.0,
       "explanation": "Specific explanation with examples from transcript",
       "feedback": "Constructive suggestions for improvement"
     }}
   ],
-  "overall_score": 2.8,
+  "overall_score": 3.0,
   "overall_feedback": "Comprehensive summary of strengths and areas for improvement"
 }}
 """
 
     COMPARATIVE_EVALUATION = """
-You are an expert sales trainer comparing two sales pitch performances for Pyroscope (continuous profiling tool).
+You are an expert evaluator comparing two performances.
 
-## Context  
-Pyroscope helps developers optimize application performance by providing continuous, code-level profiling data. Key value propositions:
-- Faster incident resolution through code-level visibility
-- Reduced infrastructure costs via optimization insights
-- Improved application reliability and performance  
-- Seamless integration with existing observability stack
+## Context
+{context}
+
+## Rubric
+{rubric}
 
 ## Your Task
-Compare these two sales pitches and determine which is more effective overall. Consider all aspects of sales effectiveness.
-
-## Evaluation Criteria
-- ICP Alignment: Research quality and prospect targeting
-- PBO Messaging: Business outcome focus and impact quantification
-- Profiling Explanation: Technical accuracy and clarity
-- Observability Context: Integration with monitoring ecosystem
-- Talk Track Alignment: Flow, research integration, objection handling
+Compare these two pitches and determine which is more effective overall based on the rubric above.
 
 ## Participant A ({participant_a_name})
 {transcript_a}
@@ -169,9 +107,9 @@ Compare these two sales pitches and determine which is more effective overall. C
 {transcript_b}
 
 ## Instructions
-1. Analyze both pitches thoroughly
+1. Analyze both pitches thoroughly against the rubric
 2. Compare their relative strengths and weaknesses
-3. Determine the overall winner based on sales effectiveness
+3. Determine the overall winner based on the evaluation criteria
 4. Provide specific examples to support your decision
 5. Offer insights into what made the difference
 
@@ -219,6 +157,41 @@ class AIGrader:
         self.config = config
         self.client = anthropic.Anthropic(api_key=config.anthropic_api_key)
         self.prompts = GradingPrompts()
+
+    def _get_rubric_text(self) -> str:
+        if self.config.rubric_text is not None:
+            return self.config.rubric_text
+        return self.prompts.RUBRIC
+
+    def _get_context_text(self) -> str:
+        if self.config.evaluation_context_text is not None:
+            return self.config.evaluation_context_text
+        return self.prompts.DEFAULT_CONTEXT
+
+    def _build_individual_prompt(self, transcript: Transcript) -> str:
+        template = self.config.individual_prompt_template or self.prompts.INDIVIDUAL_EVALUATION
+        return template.format(
+            rubric=self._get_rubric_text(),
+            transcript=transcript.content,
+            context=self._get_context_text()
+        )
+
+    def _build_comparative_prompt(
+        self,
+        transcript_a: Transcript,
+        participant_a: Participant,
+        transcript_b: Transcript,
+        participant_b: Participant
+    ) -> str:
+        template = self.config.comparative_prompt_template or self.prompts.COMPARATIVE_EVALUATION
+        return template.format(
+            participant_a_name=participant_a.name,
+            transcript_a=transcript_a.content,
+            participant_b_name=participant_b.name,
+            transcript_b=transcript_b.content,
+            context=self._get_context_text(),
+            rubric=self._get_rubric_text()
+        )
         
     async def grade_transcript(
         self, 
@@ -230,10 +203,7 @@ class AIGrader:
             logger.info(f"Grading transcript for {participant.name}")
             
             # Prepare the prompt
-            prompt = self.prompts.INDIVIDUAL_EVALUATION.format(
-                rubric=self.prompts.RUBRIC,
-                transcript=transcript.content
-            )
+            prompt = self._build_individual_prompt(transcript)
             
             # Make API call
             response = await self._make_api_call(prompt)
@@ -279,11 +249,11 @@ class AIGrader:
             logger.info(f"Comparing {participant_a.name} vs {participant_b.name}")
             
             # Prepare the prompt
-            prompt = self.prompts.COMPARATIVE_EVALUATION.format(
-                participant_a_name=participant_a.name,
-                transcript_a=transcript_a.content,
-                participant_b_name=participant_b.name,
-                transcript_b=transcript_b.content
+            prompt = self._build_comparative_prompt(
+                transcript_a=transcript_a,
+                participant_a=participant_a,
+                transcript_b=transcript_b,
+                participant_b=participant_b
             )
             
             # Make API call
