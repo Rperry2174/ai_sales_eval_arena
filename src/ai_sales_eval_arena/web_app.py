@@ -73,11 +73,11 @@ try:
     tournament_manager = TournamentManager(config)
 except ValueError as e:
     print(f"Configuration Error: {e}")
-    print("Please set ANTHROPIC_API_KEY in your environment or .env file")
-    # Create a dummy config for development
+    print("Please set ANTHROPIC_API_KEY and ANTHROPIC_MODEL in your environment or .env file")
+    # Create a dummy config for development (API calls will fail without valid config)
     config = ArenaConfig(
-        anthropic_api_key="dummy-key",
-        anthropic_model="claude-3-5-sonnet-20241022",
+        anthropic_api_key="dummy-key-set-in-env",
+        anthropic_model="set-model-in-env",
         max_concurrent_matches=3
     )
     tournament_manager = TournamentManager(config)

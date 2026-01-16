@@ -110,7 +110,7 @@ asyncio.run(run())
 | Field | Type | Description |
 |-------|------|-------------|
 | `anthropic_api_key` | str | Your Anthropic API key |
-| `anthropic_model` | str | Model to use (default: claude-3-5-sonnet) |
+| `anthropic_model` | str | Model to use (required, set in .env) |
 | `rubric_text` | str | Custom rubric markdown/text |
 | `evaluation_context_text` | str | Context about what's being evaluated |
 | `individual_prompt_template` | str | Full custom prompt for individual grading |

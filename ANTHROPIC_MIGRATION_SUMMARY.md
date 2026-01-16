@@ -14,7 +14,7 @@ The AI Sales Evaluation Arena has been successfully migrated from OpenAI GPT mod
 ### ⚙️ Configuration
 - **Environment Variable**: `OPENAI_API_KEY` → `ANTHROPIC_API_KEY`
 - **Model Setting**: `openai_model` → `anthropic_model`
-- **Default Model**: `gpt-4o-mini` → `claude-3-5-sonnet-20241022`
+- **Default Model**: `gpt-4o-mini` → Model from `.env` (ANTHROPIC_MODEL)
 
 ### 📝 Code Changes
 - `src/ai_sales_eval_arena/models.py`: Updated ArenaConfig fields
@@ -70,7 +70,7 @@ content = response.choices[0].message.content
 **After (Anthropic):**
 ```python
 response = client.messages.create(
-    model="claude-3-5-sonnet-20241022",
+    model=config.anthropic_model,  # From .env
     max_tokens=2000,
     messages=[
         {"role": "user", "content": full_prompt}

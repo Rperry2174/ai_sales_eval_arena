@@ -264,7 +264,7 @@ blog_files = VisualizationExporter.create_blog_ready_exports(
 export ANTHROPIC_API_KEY="your-anthropic-api-key"
 
 # Optional
-export ARENA_ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
+export ARENA_ANTHROPIC_MODEL="claude-sonnet-4-20250514"
 export ARENA_MAX_CONCURRENT_MATCHES="5"
 export ARENA_GRADING_TIMEOUT_SECONDS="60"
 export ARENA_DATA_DIRECTORY="data"
@@ -276,7 +276,7 @@ export ARENA_RESULTS_DIRECTORY="results"
 ```json
 {
     "anthropic_api_key": "your-key-here",
-    "anthropic_model": "claude-3-5-sonnet-20241022",
+    "anthropic_model": "claude-sonnet-4-20250514",
     "max_concurrent_matches": 5,
     "grading_timeout_seconds": 60,
     "visualization": {

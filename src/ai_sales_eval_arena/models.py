@@ -88,7 +88,7 @@ class Grade(BaseModel):
     criterion_grades: List[CriterionGrade]
     overall_score: float = Field(..., ge=1.0, le=4.0)
     overall_feedback: str = Field(..., min_length=10)
-    grader_model: str = Field(default="gpt-4o-mini")
+    grader_model: Optional[str] = None  # Set from config.anthropic_model
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     @validator('overall_score', pre=True, always=True)
@@ -198,7 +198,7 @@ class ArenaConfig(BaseModel):
     """Main configuration for the arena system."""
     
     anthropic_api_key: Optional[str] = None
-    anthropic_model: str = "claude-3-5-sonnet-20241022"
+    anthropic_model: Optional[str] = None  # Must be set via .env or config
     max_concurrent_matches: int = Field(5, gt=0, le=20)
     grading_timeout_seconds: int = Field(60, gt=0)
     rubric_text: Optional[str] = None

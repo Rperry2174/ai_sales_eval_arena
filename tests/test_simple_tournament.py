@@ -328,7 +328,7 @@ def arena_config():
     """Arena configuration for testing."""
     return ArenaConfig(
         anthropic_api_key="test-key-for-tournament",
-        anthropic_model="claude-3-5-sonnet-20241022",
+        anthropic_model="test-model",
         max_concurrent_matches=3,
         grading_timeout_seconds=60
     )
@@ -666,7 +666,7 @@ Respond ONLY with valid JSON in this exact format:
         # Create configuration
         config = ArenaConfig(
             anthropic_api_key=api_key,
-            anthropic_model="claude-3-5-sonnet-20241022",
+            anthropic_model="test-model",
             max_concurrent_matches=3
         )
         

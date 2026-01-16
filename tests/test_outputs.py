@@ -109,7 +109,7 @@ class TestHistoryEntry:
         append_history_entry(
             history_file=history_file,
             tournament=sample_tournament,
-            model="claude-3-5-sonnet",
+            model="test-model",
             rubric_text="Test rubric",
             input_dir="/path/to/transcripts",
             input_format="gong_txt",
@@ -125,7 +125,7 @@ class TestHistoryEntry:
         append_history_entry(
             history_file=history_file,
             tournament=sample_tournament,
-            model="claude-3-5-sonnet",
+            model="test-model",
             rubric_text="My custom rubric",
             input_dir="/transcripts",
             input_format="gong_txt",
@@ -140,7 +140,7 @@ class TestHistoryEntry:
         assert entry["participants"] == 3
         assert entry["matches"] == 3
         assert entry["winner_name"] == "Alice"
-        assert entry["model"] == "claude-3-5-sonnet"
+        assert entry["model"] == "test-model"
         assert entry["input_dir"] == "/transcripts"
         assert entry["input_format"] == "gong_txt"
         assert "rubric_hash" in entry

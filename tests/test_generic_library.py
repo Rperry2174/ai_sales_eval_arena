@@ -232,7 +232,7 @@ class TestGenericLibraryUsage:
         """Test that ArenaConfig accepts all customization fields."""
         config = ArenaConfig(
             anthropic_api_key="test-key",
-            anthropic_model="claude-3-opus",
+            anthropic_model="test-model",
             rubric_text="Custom rubric",
             evaluation_context_text="Custom context",
             individual_prompt_template="Custom individual {rubric} {transcript} {context}",

@@ -14,7 +14,7 @@ def load_config_from_env() -> ArenaConfig:
     
     return ArenaConfig(
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022"),
+        anthropic_model=os.getenv("ANTHROPIC_MODEL"),  # Required in .env
         max_concurrent_matches=int(os.getenv("MAX_CONCURRENT_MATCHES", "3")),
         grading_timeout_seconds=int(os.getenv("GRADING_TIMEOUT_SECONDS", "60"))
     )
@@ -28,6 +28,12 @@ def get_config() -> ArenaConfig:
         raise ValueError(
             "Anthropic API key not found. Please set ANTHROPIC_API_KEY environment variable "
             "or add it to your .env file."
+        )
+    
+    if not config.anthropic_model:
+        raise ValueError(
+            "Anthropic model not found. Please set ANTHROPIC_MODEL environment variable "
+            "or add it to your .env file (e.g., ANTHROPIC_MODEL=claude-sonnet-4-20250514)."
         )
     
     return config 
