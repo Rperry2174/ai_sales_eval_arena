@@ -165,40 +165,75 @@ class TournamentEngine:
         return standings
     
     async def _run_round_robin(self, tournament: Tournament) -> Tournament:
-        """Run a round-robin tournament."""
-        logger.info("Running round-robin tournament")
+        """Run a round-robin tournament with per-match progress output."""
+        import sys
         
-        # Process all matches concurrently
-        comparison_pairs = []
+        logger.info("Running round-robin tournament")
+        print("\n📋 Processing matches one at a time...", flush=True)
+        
         transcripts_by_id = {t.id: t for t in self._get_all_transcripts(tournament)}
         participants_by_id = {p.id: p for p in tournament.participants}
         
-        for match in tournament.matches:
+        total_matches = len(tournament.matches)
+        
+        # Process matches ONE AT A TIME for better progress tracking
+        for match_num, match in enumerate(tournament.matches, start=1):
             transcript1 = transcripts_by_id[match.transcript1_id]
             transcript2 = transcripts_by_id[match.transcript2_id]
             participant1 = participants_by_id[match.participant1_id]
             participant2 = participants_by_id[match.participant2_id]
             
-            comparison_pairs.append((transcript1, participant1, transcript2, participant2))
-        
-        # Update match statuses
-        for match in tournament.matches:
+            # Log match start with flush to ensure immediate output
+            print(f"\n{'='*60}", flush=True)
+            print(f"🥊 Match {match_num}/{total_matches}: {participant1.name} vs {participant2.name}", flush=True)
+            print(f"   ⏳ Calling AI for comparison...", flush=True)
+            print(f"{'='*60}", flush=True)
+            sys.stdout.flush()
+            logger.info(f"Starting match {match_num}/{total_matches}: {participant1.name} vs {participant2.name}")
+            
             match.status = MatchStatus.IN_PROGRESS
+            
+            try:
+                # Run single comparison
+                winner_id, feedback, metadata = await self.grader.compare_transcripts(
+                    transcript1, participant1, transcript2, participant2
+                )
+                
+                # Update match with result
+                match.winner_id = UUID(winner_id)
+                match.comparison_feedback = feedback
+                match.status = MatchStatus.COMPLETED
+                match.completed_at = datetime.utcnow()
+                
+                # Determine winner name
+                winner_name = participant1.name if winner_id == str(participant1.id) else participant2.name
+                print(f"✅ Winner: {winner_name}", flush=True)
+                logger.info(f"Match {match_num} complete: {winner_name} wins")
+                
+                # Update standings after each match
+                self._update_standings(tournament)
+                
+                # Print current standings
+                print(f"\n📊 Current Standings (after {match_num} matches):", flush=True)
+                for standing in tournament.standings[:5]:  # Top 5
+                    name = participants_by_id[standing.participant_id].name
+                    print(f"   {standing.rank}. {name}: {standing.wins}W-{standing.losses}L", flush=True)
+                
+                sys.stdout.flush()
+                
+                # Call progress callback if set
+                if hasattr(self, '_progress_callback') and self._progress_callback:
+                    await self._progress_callback(tournament, match_num, total_matches)
+                    
+            except Exception as e:
+                logger.error(f"Match {match_num} failed: {e}")
+                print(f"❌ Match failed: {e}", flush=True)
+                match.status = MatchStatus.COMPLETED  # Mark as completed even if failed
+                continue
         
-        # Run comparisons
-        logger.info(f"Processing {len(comparison_pairs)} matches concurrently")
-        comparison_results = await self.batch_grader.compare_multiple(comparison_pairs)
-        
-        # Update matches with results
-        for i, (winner_id, feedback, metadata) in enumerate(comparison_results):
-            match = tournament.matches[i]
-            match.winner_id = UUID(winner_id)
-            match.comparison_feedback = feedback
-            match.status = MatchStatus.COMPLETED
-            match.completed_at = datetime.utcnow()
-        
-        # Update standings
-        self._update_standings(tournament)
+        print(f"\n{'='*60}", flush=True)
+        print(f"🏁 All {total_matches} matches completed!", flush=True)
+        print(f"{'='*60}", flush=True)
         
         return tournament
     
@@ -367,6 +402,7 @@ class TournamentManager:
         self.config = config
         self.engine = TournamentEngine(config)
         self.active_tournaments: Dict[UUID, Tournament] = {}
+        self.output_dir: Optional[Any] = None
     
     async def create_and_run_tournament(
         self,
@@ -374,9 +410,12 @@ class TournamentManager:
         participants: List[Participant],
         transcripts: List[Transcript],
         tournament_format: TournamentFormat = TournamentFormat.ROUND_ROBIN,
-        description: Optional[str] = None
+        description: Optional[str] = None,
+        output_dir: Optional[Any] = None
     ) -> Tournament:
         """Create and run a complete tournament."""
+        self.output_dir = output_dir
+        
         tournament = await self.engine.create_tournament(
             name=name,
             participants=participants,
@@ -392,9 +431,103 @@ class TournamentManager:
         # transcripts would be stored in a database
         self.engine._tournament_transcripts = {t.id: t for t in transcripts}
         
+        # Set up progress callback for intermediate saving
+        if output_dir:
+            self.engine._progress_callback = self._create_progress_callback(output_dir, self.config)
+        
         tournament = await self.engine.run_tournament(tournament)
         
         return tournament
+    
+    def _create_progress_callback(self, output_dir, config: ArenaConfig):
+        """Create a callback function for saving progress after each match.
+        
+        Args:
+            output_dir: Directory to save progress files
+            config: Arena configuration (includes snapshot_interval)
+        """
+        import json
+        from pathlib import Path
+        from .outputs import create_participant_color_mapping, create_progression_snapshot
+        
+        # Track which matches we've saved snapshots for
+        saved_snapshots = set()
+        
+        # Color mapping will be initialized on first call (when we have tournament data)
+        color_mapping = None
+        
+        # Get snapshot interval from config (1 = every match, 5 = every 5 matches, etc.)
+        snapshot_interval = getattr(config, 'snapshot_interval', 1)
+        
+        async def save_progress(tournament: Tournament, match_num: int, total_matches: int):
+            """Save intermediate results after each match."""
+            nonlocal color_mapping
+            
+            try:
+                output_path = Path(output_dir)
+                
+                # Initialize color mapping on first call (static colors for entire tournament)
+                if color_mapping is None:
+                    color_mapping = create_participant_color_mapping(tournament.participants)
+                
+                # Save current standings to a progress file
+                progress_file = output_path / "progress.json"
+                participant_names = {p.id: p.name for p in tournament.participants}
+                
+                progress_percent = round(match_num / total_matches * 100, 1)
+                progress_data = {
+                    "matches_completed": match_num,
+                    "total_matches": total_matches,
+                    "progress_percent": progress_percent,
+                    "current_standings": [
+                        {
+                            "rank": s.rank,
+                            "name": participant_names.get(s.participant_id, "Unknown"),
+                            "wins": s.wins,
+                            "losses": s.losses,
+                            "win_percentage": s.win_percentage
+                        }
+                        for s in tournament.standings
+                    ]
+                }
+                
+                with open(progress_file, "w") as f:
+                    json.dump(progress_data, f, indent=2)
+                
+                logger.info(f"Saved progress: {match_num}/{total_matches} matches ({progress_percent}%)")
+                
+                # Save visualization snapshot based on interval
+                # Take snapshot if: match_num is divisible by interval OR it's the last match
+                should_snapshot = (match_num % snapshot_interval == 0) or (match_num == total_matches)
+                
+                if should_snapshot and match_num not in saved_snapshots:
+                    saved_snapshots.add(match_num)
+                    try:
+                        # Save leaderboard snapshot with static colors
+                        viz_dir = output_path / "visualizations"
+                        viz_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        # Name snapshots by match number for easy ordering
+                        snapshot_file = viz_dir / f"match_{match_num:04d}.png"
+                        
+                        snapshot_path = create_progression_snapshot(
+                            tournament=tournament,
+                            match_num=match_num,
+                            total_matches=total_matches,
+                            color_mapping=color_mapping,
+                            output_path=snapshot_file
+                        )
+                        
+                        if snapshot_path:
+                            print(f"📸 Saved snapshot after match {match_num}/{total_matches}: {snapshot_file}")
+                            logger.info(f"Saved snapshot at match {match_num}")
+                    except Exception as viz_e:
+                        logger.warning(f"Could not save snapshot: {viz_e}")
+                
+            except Exception as e:
+                logger.warning(f"Could not save progress: {e}")
+        
+        return save_progress
     
     def get_tournament(self, tournament_id: UUID) -> Optional[Tournament]:
         """Get a tournament by ID."""

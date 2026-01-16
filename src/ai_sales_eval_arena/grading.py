@@ -245,8 +245,10 @@ class AIGrader:
         participant_b: Participant
     ) -> Tuple[str, str, Dict[str, Any]]:
         """Compare two transcripts and determine winner."""
+        import time
         try:
             logger.info(f"Comparing {participant_a.name} vs {participant_b.name}")
+            print(f"      📤 Sending comparison request to {self.config.anthropic_model}...", flush=True)
             
             # Prepare the prompt
             prompt = self._build_comparative_prompt(
@@ -256,8 +258,11 @@ class AIGrader:
                 participant_b=participant_b
             )
             
-            # Make API call
+            # Make API call with timing
+            start_time = time.time()
             response = await self._make_api_call(prompt)
+            elapsed = time.time() - start_time
+            print(f"      📥 Response received in {elapsed:.1f}s", flush=True)
             
             # Parse response
             comparison_data = self._parse_comparison_response(response)
@@ -290,36 +295,54 @@ class AIGrader:
             logger.error(f"Error comparing transcripts: {e}")
             raise
 
-    async def _make_api_call(self, prompt: str) -> str:
-        """Make an API call to Anthropic Claude."""
-        try:
-            # Combine system message and user prompt for Claude
-            full_prompt = (
-                "You are an expert sales trainer. Respond only with valid JSON as requested.\n\n"
-                f"{prompt}"
-            )
-            
-            response = await asyncio.to_thread(
-                self.client.messages.create,
-                model=self.config.anthropic_model,
-                max_tokens=2000,
-                temperature=0.1,  # Low temperature for consistent grading
-                messages=[
-                    {"role": "user", "content": full_prompt}
-                ]
-            )
-            
-            # Extract text content from Claude's response
-            content = ""
-            for block in response.content:
-                if hasattr(block, 'text'):
-                    content += block.text
-            
-            return content.strip()
-            
-        except Exception as e:
-            logger.error(f"Anthropic API call failed: {e}")
-            raise
+    async def _make_api_call(self, prompt: str, max_retries: int = 5) -> str:
+        """Make an API call to Anthropic Claude with retry logic for rate limits."""
+        import time
+        import random
+        
+        # Combine system message and user prompt for Claude
+        full_prompt = (
+            "You are an expert sales trainer. Respond only with valid JSON as requested.\n\n"
+            f"{prompt}"
+        )
+        
+        for attempt in range(max_retries):
+            try:
+                response = await asyncio.to_thread(
+                    self.client.messages.create,
+                    model=self.config.anthropic_model,
+                    max_tokens=2000,
+                    temperature=0.1,  # Low temperature for consistent grading
+                    messages=[
+                        {"role": "user", "content": full_prompt}
+                    ]
+                )
+                
+                # Extract text content from Claude's response
+                content = ""
+                for block in response.content:
+                    if hasattr(block, 'text'):
+                        content += block.text
+                
+                return content.strip()
+                
+            except Exception as e:
+                error_str = str(e)
+                
+                # Check if it's a rate limit error
+                if "429" in error_str or "rate_limit" in error_str:
+                    if attempt < max_retries - 1:
+                        # Exponential backoff with jitter: 60s, 120s, 240s, 480s, etc.
+                        wait_time = (2 ** attempt) * 60 + random.uniform(0, 30)
+                        logger.warning(f"Rate limited, waiting {wait_time:.1f}s before retry {attempt + 2}/{max_retries}...")
+                        print(f"      ⚠️  Rate limited! Waiting {wait_time:.0f}s before retry {attempt + 2}/{max_retries}...", flush=True)
+                        await asyncio.sleep(wait_time)
+                        continue
+                
+                logger.error(f"Anthropic API call failed: {e}")
+                raise
+        
+        raise Exception(f"Max retries ({max_retries}) exceeded for API call")
 
     def _parse_grading_response(self, response: str) -> GradingResponse:
         """Parse and validate grading response."""

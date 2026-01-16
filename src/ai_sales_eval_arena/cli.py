@@ -20,7 +20,7 @@ from .tournament import TournamentManager
 from .transcript_loader import create_sample_data, TranscriptLoader
 from .visualization import TournamentVisualizer
 from .config import get_config
-from .outputs import create_tournament_progression_gif, append_history_entry
+from .outputs import create_tournament_progression_gif, create_gif_from_milestone_images, append_history_entry
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -190,6 +190,8 @@ def create_tournament(
               help='Base output directory for results')
 @click.option('--export-gif/--no-export-gif', default=True, show_default=True,
               help='Generate tournament progression GIF')
+@click.option('--snapshot-interval', '-s', type=int, default=1, show_default=True,
+              help='Take a snapshot every N matches (1=every match, 5=every 5 matches)')
 @click.pass_context
 def run_corpus(
     ctx: click.Context,
@@ -202,7 +204,8 @@ def run_corpus(
     comparative_prompt_file: Optional[str],
     tournament_format: str,
     output_dir: str,
-    export_gif: bool
+    export_gif: bool,
+    snapshot_interval: int
 ) -> None:
     """Run a tournament over a directory of plain text transcripts.
     
@@ -230,6 +233,9 @@ def run_corpus(
     if comparative_prompt is not None:
         config.comparative_prompt_template = comparative_prompt
 
+    # Set snapshot interval
+    config.snapshot_interval = snapshot_interval
+
     format_map = {
         'round_robin': TournamentFormat.ROUND_ROBIN,
         'single_elimination': TournamentFormat.SINGLE_ELIMINATION,
@@ -238,9 +244,8 @@ def run_corpus(
     tournament_fmt = format_map[tournament_format]
 
     async def run_tournament():
-        output_base = Path(output_dir)
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        output_path = output_base / timestamp
+        # Output directly to the results folder (no timestamp subdirectories)
+        output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
         with Progress(
@@ -283,12 +288,14 @@ def run_corpus(
             visualizer.export_visualizations(tournament, output_path / "visualizations")
             progress.update(task5, completed=True)
 
-            # Optional GIF export
+            # Optional GIF export - create from milestone images
             if export_gif:
-                create_tournament_progression_gif(tournament, output_path)
+                gif_path = create_gif_from_milestone_images(output_path)
+                if gif_path:
+                    print(f"🎬 Created tournament progression GIF: {gif_path}")
 
             # Append history entry
-            history_file = output_base / "history.jsonl"
+            history_file = output_path / "history.jsonl"
             append_history_entry(
                 history_file=history_file,
                 tournament=tournament,

@@ -209,6 +209,8 @@ class ArenaConfig(BaseModel):
     data_directory: str = "data"
     results_directory: str = "results"
     enable_real_time_updates: bool = True
+    # Snapshot interval: 1 = every match, 5 = every 5 matches, etc.
+    snapshot_interval: int = Field(1, ge=1, description="Take a snapshot every N matches")
     
     class Config:
         """Pydantic configuration."""
