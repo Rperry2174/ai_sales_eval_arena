@@ -113,6 +113,7 @@ class Match(BaseModel):
     grade1: Optional[Grade] = None
     grade2: Optional[Grade] = None
     comparison_feedback: Optional[str] = None
+    comparison_metadata: Optional[Dict[str, Any]] = None  # Stores strengths, weaknesses, key_differentiators, etc.
     status: MatchStatus = MatchStatus.PENDING
     created_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = None
@@ -211,6 +212,9 @@ class ArenaConfig(BaseModel):
     enable_real_time_updates: bool = True
     # Snapshot interval: 1 = every match, 5 = every 5 matches, etc.
     snapshot_interval: int = Field(1, ge=1, description="Take a snapshot every N matches")
+    # Feedback generation: write per-salesperson wins/losses Markdown summaries
+    enable_feedback_generation: bool = Field(True, description="Generate per-matchup feedback files in salespeople folders")
+    feedback_overwrite: bool = Field(True, description="Overwrite existing feedback files (False = skip existing)")
     
     class Config:
         """Pydantic configuration."""

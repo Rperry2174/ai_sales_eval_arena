@@ -12,6 +12,7 @@ from .models import (
     Transcript, Match, MatchStatus, ArenaConfig
 )
 from .grading import AIGrader, BatchGrader
+from .feedback import write_tournament_feedback
 
 logger = logging.getLogger(__name__)
 
@@ -202,6 +203,7 @@ class TournamentEngine:
                 # Update match with result
                 match.winner_id = UUID(winner_id)
                 match.comparison_feedback = feedback
+                match.comparison_metadata = metadata  # Store strengths, weaknesses, etc.
                 match.status = MatchStatus.COMPLETED
                 match.completed_at = datetime.utcnow()
                 
@@ -436,6 +438,23 @@ class TournamentManager:
             self.engine._progress_callback = self._create_progress_callback(output_dir, self.config)
         
         tournament = await self.engine.run_tournament(tournament)
+        
+        # Generate feedback files if enabled and output_dir is provided
+        if output_dir and self.config.enable_feedback_generation:
+            try:
+                from pathlib import Path
+                transcripts_by_participant = {t.participant_id: t for t in transcripts}
+                feedback_result = write_tournament_feedback(
+                    tournament=tournament,
+                    transcripts_by_participant=transcripts_by_participant,
+                    output_dir=Path(output_dir),
+                    overwrite=self.config.feedback_overwrite,
+                )
+                logger.info(f"Generated feedback: {len(feedback_result.get('wins', []))} win files, {len(feedback_result.get('losses', []))} loss files")
+                print(f"\n📝 Generated feedback files in {output_dir}/feedback/salespeople/", flush=True)
+            except Exception as e:
+                logger.warning(f"Could not generate feedback files: {e}")
+                print(f"⚠️ Could not generate feedback files: {e}", flush=True)
         
         return tournament
     
