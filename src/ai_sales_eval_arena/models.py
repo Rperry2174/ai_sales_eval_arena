@@ -58,16 +58,16 @@ class Transcript(BaseModel):
     participant_id: UUID
     content: str = Field(..., min_length=50)
     duration_minutes: Optional[float] = Field(None, gt=0)
-    word_count: int = Field(..., gt=0)
+    word_count: Optional[int] = Field(None, gt=0)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
     @validator('word_count', pre=True, always=True)
-    def calculate_word_count(cls, v: int, values: Dict[str, Any]) -> int:
+    def calculate_word_count(cls, v: Optional[int], values: Dict[str, Any]) -> int:
         """Calculate word count from content if not provided."""
         if v is None and 'content' in values:
             return len(values['content'].split())
-        return v
+        return v if v is not None else 1
 
 
 class CriterionGrade(BaseModel):
@@ -86,18 +86,18 @@ class Grade(BaseModel):
     transcript_id: UUID
     participant_id: UUID
     criterion_grades: List[CriterionGrade]
-    overall_score: float = Field(..., ge=1.0, le=4.0)
+    overall_score: Optional[float] = Field(None, ge=1.0, le=4.0)
     overall_feedback: str = Field(..., min_length=10)
     grader_model: Optional[str] = None  # Set from config.anthropic_model
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     @validator('overall_score', pre=True, always=True)
-    def calculate_overall_score(cls, v: float, values: Dict[str, Any]) -> float:
+    def calculate_overall_score(cls, v: Optional[float], values: Dict[str, Any]) -> float:
         """Calculate overall score from criterion grades if not provided."""
         if v is None and 'criterion_grades' in values:
             scores = [grade.score for grade in values['criterion_grades']]
             return sum(scores) / len(scores) if scores else 1.0
-        return v
+        return v if v is not None else 1.0
 
 
 class Match(BaseModel):

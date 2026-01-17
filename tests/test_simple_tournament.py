@@ -325,32 +325,49 @@ def create_tournament_progression_gif(tournament, output_dir: Path) -> str:
 # Fixtures
 @pytest.fixture
 def arena_config():
-    """Arena configuration for testing."""
-    return ArenaConfig(
-        anthropic_api_key="test-key-for-tournament",
-        anthropic_model="test-model",
-        max_concurrent_matches=3,
-        grading_timeout_seconds=60
-    )
+    """Arena configuration for testing - uses real API key from .env file."""
+    from ai_sales_eval_arena.config import get_config
+    
+    # Load real config from .env file
+    config = get_config()
+    
+    # Override some settings for testing
+    config.max_concurrent_matches = 3
+    config.grading_timeout_seconds = 60
+    
+    return config
 
 
 # Test cases for different scenarios
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_tournament_with_data_dir(arena_config):
     """
     Test tournament with data/transcripts directory using default Pyroscope rubric.
     
     This would be used for real sales pitch tournaments.
+    Uses real API key from .env file.
     """
     
-    # Skip if no real API key
-    if not arena_config.anthropic_api_key or "test-key" in arena_config.anthropic_api_key:
-        pytest.skip("No real Anthropic API key provided - skipping real tournament test")
+    # Verify we have a real API key
+    assert arena_config.anthropic_api_key, "ANTHROPIC_API_KEY must be set in .env"
+    assert arena_config.anthropic_model, "ANTHROPIC_MODEL must be set in .env"
     
-    transcript_dir = Path("data/transcripts")
+    # Try multiple possible locations for the data directory
+    possible_paths = [
+        Path("data/transcripts"),  # If running from ai_sales_eval_arena/
+        Path("ai_sales_eval_arena/data/transcripts"),  # If running from workspace root
+        Path(__file__).parent.parent / "data" / "transcripts",  # Relative to test file
+    ]
     
-    if not transcript_dir.exists():
-        pytest.skip(f"No data directory found at {transcript_dir}")
+    transcript_dir = None
+    for path in possible_paths:
+        if path.exists():
+            transcript_dir = path
+            break
+    
+    if transcript_dir is None:
+        pytest.skip(f"No data directory found at any of: {possible_paths}")
     
     output_dir = Path("tournament_results_data")
     
@@ -368,21 +385,34 @@ async def test_tournament_with_data_dir(arena_config):
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_tournament_with_test_data(arena_config):
     """
     Test tournament with data/test_transcripts using numbered comparison instructions.
     
     This demonstrates custom rubric for simple numerical comparison testing.
+    Uses real API key from .env file.
     """
     
-    # Skip if no real API key
-    if not arena_config.anthropic_api_key or "test-key" in arena_config.anthropic_api_key:
-        pytest.skip("No real Anthropic API key provided - skipping real tournament test")
+    # Verify we have a real API key
+    assert arena_config.anthropic_api_key, "ANTHROPIC_API_KEY must be set in .env"
+    assert arena_config.anthropic_model, "ANTHROPIC_MODEL must be set in .env"
     
-    transcript_dir = Path("data/test_transcripts")
+    # Try multiple possible locations for the test data directory
+    possible_paths = [
+        Path("data/test_transcripts"),  # If running from ai_sales_eval_arena/
+        Path("ai_sales_eval_arena/data/test_transcripts"),  # If running from workspace root
+        Path(__file__).parent.parent / "data" / "test_transcripts",  # Relative to test file
+    ]
     
-    if not transcript_dir.exists():
-        pytest.skip(f"No test data directory found at {transcript_dir}")
+    transcript_dir = None
+    for path in possible_paths:
+        if path.exists():
+            transcript_dir = path
+            break
+    
+    if transcript_dir is None:
+        pytest.skip(f"No test data directory found at any of: {possible_paths}")
     
     output_dir = Path("tournament_results_test_data")
     
@@ -466,10 +496,21 @@ async def test_tournament_basic_loading():
     Basic test to verify transcript loading works without API calls.
     """
     
-    test_dir = Path("data/test_transcripts")
+    # Try multiple possible locations for the test data directory
+    possible_paths = [
+        Path("data/test_transcripts"),  # If running from ai_sales_eval_arena/
+        Path("ai_sales_eval_arena/data/test_transcripts"),  # If running from workspace root
+        Path(__file__).parent.parent / "data" / "test_transcripts",  # Relative to test file
+    ]
     
-    if not test_dir.exists():
-        pytest.skip(f"No test data directory found at {test_dir}")
+    test_dir = None
+    for path in possible_paths:
+        if path.exists():
+            test_dir = path
+            break
+    
+    if test_dir is None:
+        pytest.skip(f"No test data directory found at any of: {possible_paths}")
     
     loader = TranscriptLoader(str(test_dir))
     participants, transcripts = loader.load_all_transcripts()

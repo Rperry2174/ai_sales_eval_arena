@@ -135,7 +135,7 @@ class TestCriterionGrade:
             CriterionGrade(
                 criterion=GradingCriterion.ICP_ALIGNMENT,
                 score=0.5,
-                explanation="Test"
+                explanation="Score too low explanation"
             )
         
         # Test score too high
@@ -143,7 +143,7 @@ class TestCriterionGrade:
             CriterionGrade(
                 criterion=GradingCriterion.ICP_ALIGNMENT,
                 score=4.5,
-                explanation="Test"
+                explanation="Score too high explanation"
             )
 
 
@@ -183,12 +183,12 @@ class TestGrade:
             CriterionGrade(
                 criterion=GradingCriterion.ICP_ALIGNMENT,
                 score=2.0,
-                explanation="Test"
+                explanation="Adequate ICP alignment shown"
             ),
             CriterionGrade(
                 criterion=GradingCriterion.PBO_MESSAGING,
                 score=4.0,
-                explanation="Test"
+                explanation="Excellent messaging throughout"
             )
         ]
         
@@ -196,7 +196,7 @@ class TestGrade:
             transcript_id=uuid4(),
             participant_id=uuid4(),
             criterion_grades=criterion_grades,
-            overall_feedback="Test feedback"
+            overall_feedback="Test feedback with sufficient length"
         )
         
         # Should calculate as (2.0 + 4.0) / 2 = 3.0
@@ -369,7 +369,8 @@ class TestArenaConfig:
         """Test default arena configuration."""
         config = ArenaConfig()
         
-        assert config.openai_model == "gpt-4o-mini"
+        # anthropic_model defaults to None (must be set via env or config)
+        assert config.anthropic_model is None
         assert config.max_concurrent_matches == 5
         assert config.grading_timeout_seconds == 60
         assert config.data_directory == "data"

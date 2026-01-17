@@ -2,11 +2,15 @@
 
 import pytest
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 from ai_sales_eval_arena.transcript_loader import (
     TranscriptLoader, load_sample_data, create_sample_data
 )
 from ai_sales_eval_arena.models import Participant, Transcript
+
+
+# Sample content that meets minimum length requirements (50+ chars)
+SAMPLE_CONTENT = "This is a comprehensive test sales pitch content that meets all the minimum requirements for the transcript validation."
 
 
 class TestTranscriptLoader:
@@ -90,7 +94,7 @@ class TestTranscriptLoader:
     @patch('pathlib.Path.exists', return_value=True)
     def test_get_transcripts_by_quality(self, mock_exists, mock_glob):
         """Test grouping transcripts by quality level."""
-        # Mock Path objects with stems
+        # Mock Path objects with stems using MagicMock
         mock_files = []
         file_data = [
             ("maya_magnificent.txt", "maya_magnificent"),
@@ -100,7 +104,8 @@ class TestTranscriptLoader:
         ]
         
         for filename, stem in file_data:
-            mock_file = Path(filename)
+            mock_file = MagicMock(spec=Path)
+            mock_file.name = filename
             mock_file.stem = stem
             mock_files.append(mock_file)
         
@@ -114,12 +119,15 @@ class TestTranscriptLoader:
         assert "gary_garbage.txt" in quality_groups["beginner"]
         assert "unknown_person.txt" in quality_groups["intermediate"]
     
-    @patch('builtins.open', new_callable=mock_open, read_data="This is a test sales pitch content.")
+    @patch('builtins.open', new_callable=mock_open, read_data=SAMPLE_CONTENT)
     @patch('pathlib.Path.exists', return_value=True)
     def test_load_transcript_file(self, mock_exists, mock_file):
         """Test loading a single transcript file."""
         loader = TranscriptLoader()
-        file_path = Path("maya_magnificent.txt")
+        
+        # Use MagicMock for the file path to allow setting stem
+        file_path = MagicMock(spec=Path)
+        file_path.name = "maya_magnificent.txt"
         file_path.stem = "maya_magnificent"
         
         participant, transcript = loader._load_transcript_file(file_path)
@@ -130,8 +138,8 @@ class TestTranscriptLoader:
         assert participant.department == "Sales"
         
         assert isinstance(transcript, Transcript)
-        assert transcript.content == "This is a test sales pitch content."
-        assert transcript.word_count == 7
+        assert transcript.content == SAMPLE_CONTENT
+        assert transcript.word_count == len(SAMPLE_CONTENT.split())
         assert transcript.metadata["filename"] == "maya_magnificent.txt"
         assert transcript.metadata["skill_level"] == "expert"
         assert transcript.metadata["source"] == "real_transcript"
@@ -160,13 +168,13 @@ class TestTranscriptLoader:
     @patch('pathlib.Path.exists', return_value=True)
     def test_load_sample_data_default(self, mock_exists, mock_load_all):
         """Test loading sample data with default parameters."""
-        # Mock return data
+        # Mock return data with content that meets minimum length requirement
         mock_participants = [Participant(name=f"Test {i}") for i in range(10)]
         mock_transcripts = [
             Transcript(
                 participant_id=p.id,
-                content="Test content",
-                word_count=2
+                content=SAMPLE_CONTENT,
+                word_count=len(SAMPLE_CONTENT.split())
             ) for p in mock_participants
         ]
         mock_load_all.return_value = (mock_participants, mock_transcripts)
@@ -188,13 +196,13 @@ class TestTranscriptLoader:
             "beginner": ["gary_garbage.txt", "derek_disaster.txt"]
         }
         
-        # Mock return data
+        # Mock return data with content that meets minimum length requirement
         mock_participants = [Participant(name=f"Test {i}") for i in range(4)]
         mock_transcripts = [
             Transcript(
                 participant_id=p.id,
-                content="Test content",
-                word_count=2
+                content=SAMPLE_CONTENT,
+                word_count=len(SAMPLE_CONTENT.split())
             ) for p in mock_participants
         ]
         mock_load_specific.return_value = (mock_participants, mock_transcripts)
@@ -227,27 +235,23 @@ class TestIntegration:
     @patch('pathlib.Path.exists', return_value=True)
     def test_load_multiple_transcripts(self, mock_exists, mock_file, mock_glob):
         """Test loading multiple transcript files."""
-        # Mock file data
+        # Mock file data with content that meets minimum length (50+ chars)
         file_contents = {
-            "maya_magnificent.txt": "Excellent sales pitch with detailed analysis.",
-            "gary_garbage.txt": "Poor sales pitch with minimal effort.",
-            "test_user.txt": "Average sales pitch with some good points."
+            "maya_magnificent.txt": "Excellent sales pitch with detailed analysis and comprehensive coverage of all topics.",
+            "gary_garbage.txt": "Poor sales pitch with minimal effort but still meets the minimum length requirements.",
+            "test_user.txt": "Average sales pitch with some good points and adequate content for the test case."
         }
         
         def mock_open_side_effect(file_path, *args, **kwargs):
             filename = file_path.name if hasattr(file_path, 'name') else str(file_path).split('/')[-1]
-            content = file_contents.get(filename, "Default content")
+            content = file_contents.get(filename, SAMPLE_CONTENT)
             return mock_open(read_data=content).return_value
         
         mock_file.side_effect = mock_open_side_effect
         
-        # Mock Path objects
-        mock_files = []
-        for filename in file_contents.keys():
-            mock_path = Path(filename)
-            mock_path.stem = filename.replace('.txt', '')
-            mock_files.append(mock_path)
-        
+        # Use real Path objects for this test (they're sortable)
+        # The glob returns real paths, only _load_transcript_file needs mocking
+        mock_files = [Path(f) for f in file_contents.keys()]
         mock_glob.return_value = mock_files
         
         loader = TranscriptLoader()
@@ -296,7 +300,10 @@ def test_real_transcript_loading_example(sample_transcript_content):
     with patch('pathlib.Path.exists', return_value=True):
         with patch('builtins.open', mock_open(read_data=sample_transcript_content)):
             loader = TranscriptLoader()
-            file_path = Path("professional_pitch.txt")
+            
+            # Use MagicMock for the file path to allow setting stem
+            file_path = MagicMock(spec=Path)
+            file_path.name = "professional_pitch.txt"
             file_path.stem = "professional_pitch"
             
             participant, transcript = loader._load_transcript_file(file_path)
